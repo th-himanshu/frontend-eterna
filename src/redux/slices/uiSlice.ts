@@ -1,24 +1,16 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
-export type PresetId = "P1" | "P2" | "P3";
+import { createSlice } from "@reduxjs/toolkit";
 
 interface UiState {
-  activePreset: PresetId;
+  // Reserved for future UI state that is global (not per-category)
 }
 
-const initialState: UiState = {
-  activePreset: "P1",
-};
+const initialState: UiState = {};
 
 const uiSlice = createSlice({
   name: "ui",
   initialState,
-  reducers: {
-    setActivePreset(state, action: PayloadAction<PresetId>) {
-      state.activePreset = action.payload;
-    },
-  },
+  reducers: {},
 });
 
-export const { setActivePreset } = uiSlice.actions;
 export default uiSlice.reducer;
+

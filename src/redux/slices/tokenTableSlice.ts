@@ -1,27 +1,41 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { TokenCategoryId } from "../../app/(pulse)/lib/tokenTypes";
 
 export type SortKey = "price" | "change24h" | "volume24h" | "liquidity";
 export type SortDirection = "asc" | "desc";
 export type ChainFilter = "ALL" | "Solana" | "Ethereum" | "BSC";
+export type PresetId = "P1" | "P2" | "P3";
 
-interface FiltersState {
-  chain: ChainFilter;
-  searchQuery: string;
+interface ColumnState {
+  sortBy: SortKey;
+  sortDirection: SortDirection;
+  filters: {
+    chain: ChainFilter;
+    searchQuery: string;
+  };
+  activePreset: PresetId;
 }
 
 export interface TokenTableState {
-  sortBy: SortKey;
-  sortDirection: SortDirection;
-  filters: FiltersState;
+  columns: Record<TokenCategoryId, ColumnState>;
   favorites: string[]; // token ids
 }
 
-const initialState: TokenTableState = {
+const defaultColumnState: ColumnState = {
   sortBy: "price",
   sortDirection: "desc",
   filters: {
     chain: "ALL",
     searchQuery: "",
+  },
+  activePreset: "P1",
+};
+
+const initialState: TokenTableState = {
+  columns: {
+    new_pairs: { ...defaultColumnState },
+    final_stretch: { ...defaultColumnState },
+    migrated: { ...defaultColumnState },
   },
   favorites: [],
 };
@@ -32,16 +46,31 @@ const tokenTableSlice = createSlice({
   reducers: {
     setSort(
       state,
-      action: PayloadAction<{ sortBy: SortKey; sortDirection: SortDirection }>,
+      action: PayloadAction<{ category: TokenCategoryId; sortBy: SortKey; sortDirection: SortDirection }>
     ) {
-      state.sortBy = action.payload.sortBy;
-      state.sortDirection = action.payload.sortDirection;
+      const { category, sortBy, sortDirection } = action.payload;
+      if (state.columns[category]) {
+        state.columns[category].sortBy = sortBy;
+        state.columns[category].sortDirection = sortDirection;
+      }
     },
-    setChainFilter(state, action: PayloadAction<ChainFilter>) {
-      state.filters.chain = action.payload;
+    setChainFilter(state, action: PayloadAction<{ category: TokenCategoryId; chain: ChainFilter }>) {
+      const { category, chain } = action.payload;
+      if (state.columns[category]) {
+        state.columns[category].filters.chain = chain;
+      }
     },
-    setSearchQuery(state, action: PayloadAction<string>) {
-      state.filters.searchQuery = action.payload;
+    setSearchQuery(state, action: PayloadAction<{ category: TokenCategoryId; query: string }>) {
+      const { category, query } = action.payload;
+      if (state.columns[category]) {
+        state.columns[category].filters.searchQuery = query;
+      }
+    },
+    setActivePreset(state, action: PayloadAction<{ category: TokenCategoryId; preset: PresetId }>) {
+      const { category, preset } = action.payload;
+      if (state.columns[category]) {
+        state.columns[category].activePreset = preset;
+      }
     },
     toggleFavorite(state, action: PayloadAction<string>) {
       const id = action.payload;
@@ -54,7 +83,7 @@ const tokenTableSlice = createSlice({
   },
 });
 
-export const { setSort, setChainFilter, setSearchQuery, toggleFavorite } =
+export const { setSort, setChainFilter, setSearchQuery, setActivePreset, toggleFavorite } =
   tokenTableSlice.actions;
 
 export default tokenTableSlice.reducer;

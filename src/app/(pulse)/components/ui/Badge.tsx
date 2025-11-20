@@ -7,7 +7,7 @@ interface BadgeProps {
     icon?: React.ReactNode;
 }
 
-export function Badge({ label, value, variant = "neutral", icon }: BadgeProps) {
+export const Badge = React.memo(function Badge({ label, value, variant = "neutral", icon }: BadgeProps) {
     const colors = {
         neutral: "bg-neutral-800 text-neutral-400 border-neutral-700",
         danger: "bg-red-500/10 text-red-400 border-red-500/20",
@@ -23,4 +23,4 @@ export function Badge({ label, value, variant = "neutral", icon }: BadgeProps) {
             <span>{value}</span>
         </div>
     );
-}
+});

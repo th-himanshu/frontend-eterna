@@ -1,16 +1,15 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo } from "react";
 import type { TokenRow } from "../../lib/tokenTypes";
 import { Tooltip } from "../ui/Tooltip";
 import { Badge } from "../ui/Badge";
 import { Modal } from "../ui/Modal";
+import { formatLargeCurrency, formatTimeAgo } from "../../lib/formatters";
 
 interface TokenCardProps {
   row: TokenRow;
 }
 
-export function TokenCard({ row }: TokenCardProps) {
+export const TokenCard = memo(function TokenCard({ row }: TokenCardProps) {
   const [flash, setFlash] = useState<"green" | "red" | null>(null);
   const [timeAgo, setTimeAgo] = useState<string>("now");
   const [isFundingModalOpen, setIsFundingModalOpen] = useState(false);
@@ -25,14 +24,7 @@ export function TokenCard({ row }: TokenCardProps) {
   // Update "time ago"
   useEffect(() => {
     const updateTime = () => {
-      if (!row.receivedAt) {
-        setTimeAgo("");
-        return;
-      }
-      const diff = Date.now() - row.receivedAt;
-      const seconds = Math.floor(diff / 1000);
-      if (seconds < 60) setTimeAgo(`${seconds}s`);
-      else setTimeAgo(`${Math.floor(seconds / 60)}m`);
+      setTimeAgo(formatTimeAgo(row.receivedAt));
     };
 
     updateTime();
@@ -40,21 +32,14 @@ export function TokenCard({ row }: TokenCardProps) {
     return () => clearInterval(interval);
   }, [row.receivedAt]);
 
-  const formatLargeCurrency = (value: number) => {
-    if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-    if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`;
-    return `$${value.toFixed(2)}`;
-  };
-
   return (
     <>
       <div className="group relative flex gap-3 rounded-lg border border-axiom-border bg-axiom-card p-3 transition-all hover:border-axiom-border-highlight hover:bg-axiom-card-hover">
         {/* Flash Overlay */}
         {flash && (
           <div
-            className={`pointer-events-none absolute inset-0 rounded-lg opacity-10 ${
-              flash === "green" ? "bg-axiom-green" : "bg-axiom-red"
-            }`}
+            className={`pointer-events-none absolute inset-0 rounded-lg opacity-10 ${flash === "green" ? "bg-axiom-green" : "bg-axiom-red"
+              }`}
           />
         )}
 
@@ -62,8 +47,10 @@ export function TokenCard({ row }: TokenCardProps) {
         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border border-axiom-border bg-neutral-900">
           <div className="flex h-full w-full items-center justify-center text-xs font-bold text-neutral-700">
             <img
-            className="h-12 w-12 object-contain"
-             src="data:image/webp;base64,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" alt="ben10" />
+              className="h-12 w-12 object-contain"
+              src="data:image/webp;base64,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"
+              alt="ben10"
+            />
           </div>
           {/* Chain Icon Overlay */}
           <div className="absolute bottom-0 right-0 rounded-tl-md bg-axiom-card p-0.5">
@@ -272,9 +259,8 @@ export function TokenCard({ row }: TokenCardProps) {
           <div className="flex items-center justify-between rounded-lg bg-neutral-900 p-3">
             <span className="text-sm">Status</span>
             <span
-              className={`font-bold ${
-                row.fundingRisk.isScammer ? "text-red-500" : "text-green-500"
-              }`}
+              className={`font-bold ${row.fundingRisk.isScammer ? "text-red-500" : "text-green-500"
+                }`}
             >
               {row.fundingRisk.isScammer ? "Suspicious" : "Verified"}
             </span>
@@ -297,4 +283,5 @@ export function TokenCard({ row }: TokenCardProps) {
       </Modal>
     </>
   );
-}
+});
+

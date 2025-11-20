@@ -7,9 +7,9 @@ export function TokenCardSkeleton() {
             <div className="flex min-w-0 flex-1 flex-col gap-2">
                 {/* Top Row Skeleton */}
                 <div className="flex items-start justify-between">
-                    <div className="flex flex-col gap-1">
-                        <div className="h-4 w-24 animate-pulse rounded bg-neutral-800" />
-                        <div className="h-3 w-16 animate-pulse rounded bg-neutral-800" />
+                    <div className="flex items-center gap-2">
+                        <div className="h-4 w-16 animate-pulse rounded bg-neutral-800" />
+                        <div className="h-3 w-24 animate-pulse rounded bg-neutral-800" />
                     </div>
                     <div className="flex flex-col items-end gap-1">
                         <div className="h-3 w-12 animate-pulse rounded bg-neutral-800" />
@@ -27,6 +27,7 @@ export function TokenCardSkeleton() {
 
                 {/* Bottom Row Skeleton */}
                 <div className="flex gap-1.5">
+                    <div className="h-5 w-16 animate-pulse rounded-full bg-neutral-800" />
                     <div className="h-5 w-16 animate-pulse rounded-full bg-neutral-800" />
                     <div className="h-5 w-16 animate-pulse rounded-full bg-neutral-800" />
                     <div className="h-5 w-16 animate-pulse rounded-full bg-neutral-800" />
