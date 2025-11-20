@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "../../../../redux/store";
+import { setSearchQuery } from "../../../../redux/slices/tokenTableSlice";
 
 export function PulseHeader() {
-  const [search, setSearch] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const search = useSelector(
+    (state: RootState) => state.tokenTable.filters.searchQuery,
+  );
 
   return (
     <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -23,7 +28,7 @@ export function PulseHeader() {
         <div className="flex flex-1 items-center gap-2 md:max-w-md">
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => dispatch(setSearchQuery(event.target.value))}
             className="h-9 w-full rounded-md border border-slate-600/60 bg-slate-900/60 px-3 text-xs text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
             placeholder="Search by token, symbol, or address"
           />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { TokenCategoryId, TokenRow } from "../../lib/tokenTypes";
 import { useTokenTableData } from "../../hooks/useTokenTableData";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,8 +9,16 @@ import {
   setActivePreset,
   type PresetId,
 } from "../../../../redux/slices/uiSlice";
+import {
+  setSort,
+  setChainFilter,
+  type SortKey,
+  type SortDirection,
+  type ChainFilter,
+} from "../../../../redux/slices/tokenTableSlice";
 
 const PRESETS: PresetId[] = ["P1", "P2", "P3"];
+const CHAIN_FILTERS: ChainFilter[] = ["ALL", "Solana", "Ethereum", "BSC"];
 
 function formatLargeCurrency(value: number): string {
   if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}m`;
@@ -27,6 +36,57 @@ function formatChange(value: number): string {
   return `${sign}${value.toFixed(1)}%`;
 }
 
+function applySortAndFilters(
+  rows: TokenRow[],
+  options: {
+    sortBy: SortKey;
+    sortDirection: SortDirection;
+    chain: ChainFilter;
+    searchQuery: string;
+  }
+): TokenRow[] {
+  const { sortBy, sortDirection, chain, searchQuery } = options;
+
+  let filtered = rows;
+
+  if (chain !== "ALL") {
+    filtered = filtered.filter((row) => row.chain === chain);
+  }
+
+  if (searchQuery.trim().length > 0) {
+    const query = searchQuery.trim().toLowerCase();
+    filtered = filtered.filter((row) =>
+      `${row.name} ${row.symbol}`.toLowerCase().includes(query)
+    );
+  }
+
+  const sorted = [...filtered].sort((a, b) => {
+    const getValue = (row: TokenRow): number => {
+      switch (sortBy) {
+        case "price":
+          return row.price;
+        case "change24h":
+          return row.change24h;
+        case "volume24h":
+          return row.volume24h;
+        case "liquidity":
+          return row.liquidity;
+        default:
+          return 0;
+      }
+    };
+
+    const aVal = getValue(a);
+    const bVal = getValue(b);
+
+    if (aVal === bVal) return 0;
+    const diff = aVal - bVal;
+    return sortDirection === "asc" ? (diff < 0 ? -1 : 1) : diff < 0 ? 1 : -1;
+  });
+
+  return sorted;
+}
+
 export interface TokenTableProps {
   category: TokenCategoryId;
   name: string;
@@ -36,6 +96,26 @@ export function TokenTable({ category, name }: TokenTableProps) {
   const { data: rows = [] } = useTokenTableData({ category });
   const dispatch = useDispatch<AppDispatch>();
   const activePreset = useSelector((state: RootState) => state.ui.activePreset);
+  const { sortBy, sortDirection, filters } = useSelector(
+    (state: RootState) => state.tokenTable
+  );
+
+  const visibleRows = useMemo(
+    () =>
+      applySortAndFilters(rows, {
+        sortBy,
+        sortDirection,
+        chain: filters.chain,
+        searchQuery: filters.searchQuery,
+      }),
+    [rows, sortBy, sortDirection, filters.chain, filters.searchQuery]
+  );
+
+  const handlePriceSortClick = () => {
+    const nextDirection: SortDirection =
+      sortBy === "price" && sortDirection === "desc" ? "asc" : "desc";
+    dispatch(setSort({ sortBy: "price", sortDirection: nextDirection }));
+  };
 
   return (
     <div className="overflow-hidden border border-slate-800/80 bg-[#020617]">
@@ -81,8 +161,46 @@ export function TokenTable({ category, name }: TokenTableProps) {
         </div>
       </div>
 
+      <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/40 px-3 py-1 text-[10px] text-slate-400">
+        <button
+          type="button"
+          onClick={handlePriceSortClick}
+          className="inline-flex items-center gap-1 rounded-sm px-2 py-0.5 hover:bg-slate-900/80 hover:text-slate-100"
+        >
+          <span>Price</span>
+          <span className="text-[9px]">
+            {sortBy === "price" ? (sortDirection === "desc" ? "↓" : "↑") : ""}
+          </span>
+        </button>
+
+        <div className="flex items-center gap-1">
+          {CHAIN_FILTERS.map((chain) => {
+            const isActive = filters.chain === chain;
+            const label =
+              chain === "ALL" ? "All" : chain === "BSC" ? "BSC" : chain;
+            const base = "rounded-sm px-2 py-0.5 text-[10px]";
+            const activeClasses = "bg-slate-800 text-slate-50";
+            const inactiveClasses =
+              "text-slate-400 hover:bg-slate-900/80 hover:text-slate-100";
+
+            return (
+              <button
+                key={chain}
+                type="button"
+                onClick={() => dispatch(setChainFilter(chain))}
+                className={`${base} ${
+                  isActive ? activeClasses : inactiveClasses
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="divide-y divide-slate-800/80">
-        {rows.map((row) => (
+        {visibleRows.map((row) => (
           <TokenCardRow key={row.id} row={row} />
         ))}
       </div>
