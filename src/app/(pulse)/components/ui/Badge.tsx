@@ -9,8 +9,7 @@ interface BadgeProps {
     icon?: React.ReactNode;
 }
 
-export const Badge = React.memo(function Badge({
-    label,
+export const Badge = React.memo(function Badge({    
     value,
     children,
     variant = "neutral",

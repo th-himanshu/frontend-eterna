@@ -7,7 +7,6 @@ import { useTokenLiveUpdates } from "../../hooks/useTokenLiveUpdates";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "../../../../redux/store";
 import {
-  setSort,
   setChainFilter,
   setSearchQuery,
   setActivePreset,
@@ -24,8 +23,6 @@ import { PresetHoverCard } from "../ui/PresetHoverCard";
 import { FiltersModal, type FilterState } from "../ui/FiltersModal";
 
 const PRESETS: PresetId[] = ["P1", "P2", "P3"];
-const CHAIN_FILTERS: ChainFilter[] = ["ALL", "Solana", "Ethereum", "BSC"];
-
 
 function applySortAndFilters(
   rows: TokenRow[],
@@ -161,7 +158,7 @@ export interface TokenTableProps {
   name: string;
 }
 
-export function TokenTable({ category, name }: TokenTableProps) {
+export function TokenTable({ category }: TokenTableProps) {
   useTokenLiveUpdates({ category });
   const { data: rows = [], isLoading } = useTokenTableData({ category });
   const dispatch = useDispatch<AppDispatch>();
@@ -207,14 +204,6 @@ export function TokenTable({ category, name }: TokenTableProps) {
       }, advancedFilters),
     [rows, sortBy, sortDirection, filters.chain, filters.searchQuery, advancedFilters]
   );
-
-  const handlePriceSortClick = () => {
-    const nextDirection: SortDirection =
-      sortBy === "price" && sortDirection === "desc" ? "asc" : "desc";
-    dispatch(
-      setSort({ category, sortBy: "price", sortDirection: nextDirection })
-    );
-  };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setSearchQuery({ category, query: e.target.value }));

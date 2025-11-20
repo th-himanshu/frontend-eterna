@@ -11,8 +11,7 @@ interface TradingSettingsModalProps {
 
 export function TradingSettingsModal({
     isOpen,
-    onClose,
-    presetId,
+    onClose,    
 }: TradingSettingsModalProps) {
     const [activeTab, setActiveTab] = useState<"buy" | "sell">("buy");
     const [mevMode, setMevMode] = useState<"off" | "reduced" | "secure">("off");

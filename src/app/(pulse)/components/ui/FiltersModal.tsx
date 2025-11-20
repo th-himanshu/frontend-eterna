@@ -333,7 +333,7 @@ export function FiltersModal({
                                         className="h-4 w-4 rounded border-axiom-border bg-axiom-bg text-axiom-accent focus:ring-axiom-accent"
                                     />
                                     <span className="text-sm text-axiom-text-main">
-                                        CA ends in 'pump'
+                                        CA ends in &apos;pump&apos;
                                     </span>
                                 </label>
                             </div>
