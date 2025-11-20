@@ -1,39 +1,77 @@
 "use client";
 
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "../../../redux/store";
+import { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
+import type { AppDispatch } from "../../../redux/store";
 import { setLastUpdateAt } from "../../../redux/slices/liveUpdatesSlice";
-import type { TokenCategoryId } from "../lib/tokenTypes";
+import type { TokenCategoryId, TokenRow, WebSocketMessage } from "../lib/tokenTypes";
 
 export interface UseTokenLiveUpdatesOptions {
   category: TokenCategoryId;
 }
 
-/**
- * Stub hook – no real WebSocket yet.
- *
- * This just updates `lastUpdateAt` on an interval when `isConnected` is true,
- * so the UI can already react to a "heartbeat" while we haven't wired a real
- * backend socket. Later we'll replace the interval body with actual
- * WebSocket message handling.
- */
 export function useTokenLiveUpdates({ category }: UseTokenLiveUpdatesOptions) {
   const dispatch = useDispatch<AppDispatch>();
-  const { isConnected, updateIntervalMs } = useSelector(
-    (state: RootState) => state.liveUpdates,
-  );
+  const queryClient = useQueryClient();
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    if (!isConnected) return;
+    // In a real app, this URL would come from env vars
+    const wsUrl = "ws://localhost:3001";
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
 
-    const id = window.setInterval(() => {
-      // For now we only record that an update "tick" happened.
-      // In the real implementation, this is where we'd handle
-      // incoming WebSocket messages for the given `category`.
-      dispatch(setLastUpdateAt(Date.now()));
-    }, updateIntervalMs);
+    ws.onopen = () => {
+      console.log("WS Connected");
+      dispatch(setLastUpdateAt(Date.now())); // Initial "connected" state
+    };
 
-    return () => window.clearInterval(id);
-  }, [isConnected, updateIntervalMs, dispatch, category]);
+    ws.onmessage = (event) => {
+      try {
+        const message: WebSocketMessage = JSON.parse(event.data);
+
+        if (message.type === "price_update") {
+          dispatch(setLastUpdateAt(message.timestamp));
+
+          // Update React Query cache
+          queryClient.setQueryData<TokenRow[]>(
+            ["tokenTable", category],
+            (oldData) => {
+              if (!oldData) return oldData;
+              return oldData.map((token) => {
+                if (token.id === message.tokenId) {
+                  return {
+                    ...token,
+                    price: message.price,
+                    change24h: message.change24h,
+                    volume24h: message.volume24h,
+                    liquidity: message.liquidity,
+                    receivedAt: Date.now(), // Mark as just received
+                  };
+                }
+                return token;
+              });
+            }
+          );
+        }
+      } catch (err) {
+        console.error("Failed to parse WS message", err);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("WS Closed");
+    };
+
+    ws.onerror = (error) => {
+      console.error("WS Error", error);
+    };
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+    };
+  }, [category, dispatch, queryClient]);
 }

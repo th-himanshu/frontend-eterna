@@ -13,13 +13,15 @@ export function PulseHeader() {
   return (
     <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/60" />
+        <div className="h-9 w-9 rounded-md bg-axiom-accent/20 ring-1 ring-axiom-accent/60 flex items-center justify-center">
+          <span className="text-axiom-accent font-bold text-lg">A</span>
+        </div>
         <div>
-          <div className="text-sm font-semibold tracking-tight text-slate-50">
+          <div className="text-sm font-bold tracking-tight text-axiom-text-main">
             Axiom Pulse
           </div>
-          <div className="text-xs text-slate-400">
-            Token discovery &amp; live trading metrics
+          <div className="text-xs text-axiom-text-dim">
+            Token discovery & live trading metrics
           </div>
         </div>
       </div>
@@ -29,25 +31,22 @@ export function PulseHeader() {
           <input
             value={search}
             onChange={(event) => dispatch(setSearchQuery(event.target.value))}
-            className="h-9 w-full rounded-md border border-slate-600/60 bg-slate-900/60 px-3 text-xs text-slate-100 placeholder:text-slate-500 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            className="h-9 w-full rounded-md border border-axiom-border bg-axiom-card px-3 text-xs text-axiom-text-main placeholder:text-axiom-text-dim focus:border-axiom-accent focus:outline-none focus:ring-1 focus:ring-axiom-accent"
             placeholder="Search by token, symbol, or address"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-md border border-slate-600/60 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-100 hover:border-indigo-400 hover:bg-slate-900"
-          >
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-            <span>Mainnet</span>
-          </button>
+          <div className="inline-flex items-center gap-1 rounded-md border border-axiom-border bg-axiom-card px-3 py-1.5 text-xs text-axiom-text-dim">
+            <span className="h-2 w-2 rounded-full bg-axiom-green animate-pulse" />
+            <span>Live</span>
+          </div>
 
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-400"
+            className="rounded-md bg-axiom-accent px-4 py-1.5 text-xs font-semibold text-white hover:bg-axiom-accent/90"
           >
-            Connect wallet
+            Connect Wallet
           </button>
         </div>
       </div>
