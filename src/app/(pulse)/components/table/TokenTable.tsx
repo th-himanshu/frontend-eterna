@@ -21,6 +21,7 @@ import { TokenCardSkeleton } from "./TokenCardSkeleton";
 import { ErrorBoundary } from "../ui/ErrorBoundary";
 import { TradingSettingsModal } from "../ui/TradingSettingsModal";
 import { PresetHoverCard } from "../ui/PresetHoverCard";
+import { FiltersModal, type FilterState } from "../ui/FiltersModal";
 
 const PRESETS: PresetId[] = ["P1", "P2", "P3"];
 const CHAIN_FILTERS: ChainFilter[] = ["ALL", "Solana", "Ethereum", "BSC"];
@@ -112,6 +113,21 @@ export function TokenTable({ category, name }: TokenTableProps) {
 
   const [hoveredPreset, setHoveredPreset] = useState<PresetId | null>(null);
   const [editingPreset, setEditingPreset] = useState<PresetId | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
+    category,
+    protocols: [],
+    quoteTokens: [],
+    searchKeywords: "",
+    excludeKeywords: "",
+    dexPaid: false,
+    caEndsInPump: false,
+    ageMin: "",
+    ageMax: "",
+    ageUnit: "m",
+    top10HoldersMin: "",
+    top10HoldersMax: "",
+  });
 
   const handlePriceSortClick = () => {
     const nextDirection: SortDirection =
@@ -171,8 +187,8 @@ export function TokenTable({ category, name }: TokenTableProps) {
                 )
               }
               className={`flex items-center gap-1 px-2 py-1 transition-colors ${filters.chain === "Solana"
-                  ? "text-axiom-accent"
-                  : "text-axiom-text-dim hover:text-axiom-text-main"
+                ? "text-axiom-accent"
+                : "text-axiom-text-dim hover:text-axiom-text-main"
                 }`}
             >
               <svg
@@ -234,7 +250,10 @@ export function TokenTable({ category, name }: TokenTableProps) {
           </div>
 
           {/* Filter Icon */}
-          <button className="flex h-8 w-8 items-center justify-center rounded-full border border-axiom-border bg-axiom-bg text-axiom-text-dim hover:border-axiom-border-highlight hover:text-axiom-text-main">
+          <button
+            onClick={() => setShowFilters(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-axiom-border bg-axiom-bg text-axiom-text-dim hover:border-axiom-border-highlight hover:text-axiom-text-main"
+          >
             <svg
               width="14"
               height="14"
@@ -280,6 +299,16 @@ export function TokenTable({ category, name }: TokenTableProps) {
         isOpen={!!editingPreset}
         onClose={() => setEditingPreset(null)}
         presetId={editingPreset || ""}
+      />
+
+      <FiltersModal
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        currentFilters={advancedFilters}
+        onApply={(newFilters) => {
+          setAdvancedFilters(newFilters);
+          // TODO: Apply filters to the token list
+        }}
       />
     </div>
   );
