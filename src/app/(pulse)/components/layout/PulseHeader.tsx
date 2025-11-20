@@ -8,7 +8,7 @@ export function PulseHeader() {
   return (
     <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-lg bg-indigo-500/20 ring-1 ring-indigo-500/60" />
+        <div className="h-9 w-9 rounded-md bg-indigo-500/20 ring-1 ring-indigo-500/60" />
         <div>
           <div className="text-sm font-semibold tracking-tight text-slate-50">
             Axiom Pulse
@@ -32,7 +32,7 @@ export function PulseHeader() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="inline-flex items-center gap-1 rounded-full border border-slate-600/60 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-100 hover:border-indigo-400 hover:bg-slate-900"
+            className="inline-flex items-center gap-1 rounded-md border border-slate-600/60 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-100 hover:border-indigo-400 hover:bg-slate-900"
           >
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
             <span>Mainnet</span>
@@ -40,7 +40,7 @@ export function PulseHeader() {
 
           <button
             type="button"
-            className="inline-flex items-center justify-center rounded-full bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-400"
+            className="inline-flex items-center justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-400"
           >
             Connect wallet
           </button>

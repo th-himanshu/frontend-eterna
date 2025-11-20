@@ -7,8 +7,8 @@ interface PulseLayoutProps {
 
 export function PulseLayout({ children }: PulseLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6">
+    <div className="min-h-screen bg-[rgb(2,6,23)] text-slate-100 flex justify-center">
+      <div className="flex w-full flex-col gap-6 px-2 py-6 md:px-6">
         <PulseHeader />
         {children}
       </div>
