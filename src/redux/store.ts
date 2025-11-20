@@ -1,7 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
+import uiReducer from "./slices/uiSlice";
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    ui: uiReducer,
+  },
   devTools: process.env.NODE_ENV !== "production",
 });
 
