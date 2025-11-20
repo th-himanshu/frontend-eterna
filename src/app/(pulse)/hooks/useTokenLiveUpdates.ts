@@ -17,8 +17,8 @@ export function useTokenLiveUpdates({ category }: UseTokenLiveUpdatesOptions) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // In a real app, this URL would come from env vars
-    const wsUrl = "ws://localhost:3001";
+    // Use environment variable for WebSocket URL
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001";
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

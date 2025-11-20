@@ -1,0 +1,16 @@
+{
+  "name": "axiom-pulse-ws-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for Axiom Pulse token updates",
+  "main": "ws-server.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node ws-server.mjs"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
