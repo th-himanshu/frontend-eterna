@@ -26,6 +26,7 @@ import { FiltersModal, type FilterState } from "../ui/FiltersModal";
 const PRESETS: PresetId[] = ["P1", "P2", "P3"];
 const CHAIN_FILTERS: ChainFilter[] = ["ALL", "Solana", "Ethereum", "BSC"];
 
+
 function applySortAndFilters(
   rows: TokenRow[],
   options: {
@@ -33,16 +34,19 @@ function applySortAndFilters(
     sortDirection: SortDirection;
     chain: ChainFilter;
     searchQuery: string;
-  }
+  },
+  advancedFilters?: FilterState
 ): TokenRow[] {
   const { sortBy, sortDirection, chain, searchQuery } = options;
 
   let filtered = rows;
 
+  // Basic chain filter
   if (chain !== "ALL") {
     filtered = filtered.filter((row) => row.chain === chain);
   }
 
+  // Basic search query
   if (searchQuery.trim().length > 0) {
     const query = searchQuery.trim().toLowerCase();
     filtered = filtered.filter((row) =>
@@ -50,7 +54,82 @@ function applySortAndFilters(
     );
   }
 
+  // Advanced filters
+  if (advancedFilters) {
+    // Protocol filters (if any selected)
+    if (advancedFilters.protocols.length > 0) {
+      filtered = filtered.filter((row) =>
+        advancedFilters.protocols.some((protocol) =>
+          row.name.toLowerCase().includes(protocol.toLowerCase())
+        )
+      );
+    }
+
+    // Quote token filters (if any selected)
+    if (advancedFilters.quoteTokens.length > 0) {
+      filtered = filtered.filter((row) =>
+        advancedFilters.quoteTokens.some((token) =>
+          row.symbol.toLowerCase().includes(token.toLowerCase())
+        )
+      );
+    }
+
+    // Search keywords (include)
+    if (advancedFilters.searchKeywords.trim().length > 0) {
+      const keywords = advancedFilters.searchKeywords
+        .split(",")
+        .map((k) => k.trim().toLowerCase())
+        .filter((k) => k.length > 0);
+
+      if (keywords.length > 0) {
+        filtered = filtered.filter((row) =>
+          keywords.some((keyword) =>
+            `${row.name} ${row.symbol} ${row.description || ""}`.toLowerCase().includes(keyword)
+          )
+        );
+      }
+    }
+
+    // Exclude keywords
+    if (advancedFilters.excludeKeywords.trim().length > 0) {
+      const excludeKeywords = advancedFilters.excludeKeywords
+        .split(",")
+        .map((k) => k.trim().toLowerCase())
+        .filter((k) => k.length > 0);
+
+      if (excludeKeywords.length > 0) {
+        filtered = filtered.filter((row) =>
+          !excludeKeywords.some((keyword) =>
+            `${row.name} ${row.symbol} ${row.description || ""}`.toLowerCase().includes(keyword)
+          )
+        );
+      }
+    }
+
+    // Top 10 Holders % filter
+    if (advancedFilters.top10HoldersMin || advancedFilters.top10HoldersMax) {
+      filtered = filtered.filter((row) => {
+        const holdersPercent = row.holders || 0;
+        const min = advancedFilters.top10HoldersMin
+          ? parseFloat(advancedFilters.top10HoldersMin)
+          : 0;
+        const max = advancedFilters.top10HoldersMax
+          ? parseFloat(advancedFilters.top10HoldersMax)
+          : 100;
+        return holdersPercent >= min && holdersPercent <= max;
+      });
+    }
+  }
+
+  // Sort - First by receivedAt (newest first), then by selected sort key
   const sorted = [...filtered].sort((a, b) => {
+    // Primary sort: newest tokens first (by receivedAt)
+    const timeDiff = (b.receivedAt || 0) - (a.receivedAt || 0);
+    if (Math.abs(timeDiff) > 5000) { // If more than 5 seconds difference, prioritize by time
+      return timeDiff;
+    }
+
+    // Secondary sort: by selected sort key
     const getValue = (row: TokenRow): number => {
       switch (sortBy) {
         case "price":
@@ -100,17 +179,6 @@ export function TokenTable({ category, name }: TokenTableProps) {
     activePreset: "P1" as PresetId,
   };
 
-  const visibleRows = useMemo(
-    () =>
-      applySortAndFilters(rows, {
-        sortBy,
-        sortDirection,
-        chain: filters.chain,
-        searchQuery: filters.searchQuery,
-      }),
-    [rows, sortBy, sortDirection, filters.chain, filters.searchQuery]
-  );
-
   const [hoveredPreset, setHoveredPreset] = useState<PresetId | null>(null);
   const [editingPreset, setEditingPreset] = useState<PresetId | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -128,6 +196,17 @@ export function TokenTable({ category, name }: TokenTableProps) {
     top10HoldersMin: "",
     top10HoldersMax: "",
   });
+
+  const visibleRows = useMemo(
+    () =>
+      applySortAndFilters(rows, {
+        sortBy,
+        sortDirection,
+        chain: filters.chain,
+        searchQuery: filters.searchQuery,
+      }, advancedFilters),
+    [rows, sortBy, sortDirection, filters.chain, filters.searchQuery, advancedFilters]
+  );
 
   const handlePriceSortClick = () => {
     const nextDirection: SortDirection =
@@ -307,7 +386,6 @@ export function TokenTable({ category, name }: TokenTableProps) {
         currentFilters={advancedFilters}
         onApply={(newFilters) => {
           setAdvancedFilters(newFilters);
-          // TODO: Apply filters to the token list
         }}
       />
     </div>

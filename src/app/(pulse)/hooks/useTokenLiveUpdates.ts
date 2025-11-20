@@ -34,24 +34,32 @@ export function useTokenLiveUpdates({ category }: UseTokenLiveUpdatesOptions) {
         if (message.type === "price_update") {
           dispatch(setLastUpdateAt(message.timestamp));
 
-          // Update React Query cache
+          // Update React Query cache - ADD new token instead of updating
           queryClient.setQueryData<TokenRow[]>(
             ["tokenTable", category],
             (oldData) => {
               if (!oldData) return oldData;
-              return oldData.map((token) => {
-                if (token.id === message.tokenId) {
-                  return {
-                    ...token,
-                    price: message.price,
-                    change24h: message.change24h,
-                    volume24h: message.volume24h,
-                    liquidity: message.liquidity,
-                    receivedAt: Date.now(), // Mark as just received
-                  };
-                }
-                return token;
-              });
+
+              // Find if token already exists
+              const existingToken = oldData.find((token) => token.id === message.tokenId);
+
+              if (existingToken) {
+                // Create a new token entry with updated data and new ID
+                const newToken: TokenRow = {
+                  ...existingToken,
+                  id: `${message.tokenId}-${Date.now()}`, // Make it unique
+                  price: message.price,
+                  change24h: message.change24h,
+                  volume24h: message.volume24h,
+                  liquidity: message.liquidity,
+                  receivedAt: Date.now(),
+                };
+
+                // Add to the beginning of the list
+                return [newToken, ...oldData];
+              }
+
+              return oldData;
             }
           );
         }
