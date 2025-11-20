@@ -85,6 +85,8 @@ export const TokenCard = memo(function TokenCard({ row }: TokenCardProps) {
         <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-md border border-axiom-border bg-neutral-900">
           <div className="flex h-full w-full items-center justify-center text-xs font-bold text-neutral-700">
             <Image
+              width={50}
+              height={50}
               className="h-12 w-12 object-contain"
               src={getRandomImage(row.id)}
               alt={row.symbol}
