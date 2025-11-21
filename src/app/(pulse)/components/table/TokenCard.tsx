@@ -90,6 +90,7 @@ export const TokenCard = memo(function TokenCard({ row }: TokenCardProps) {
               className="h-12 w-12 object-contain"
               src={getRandomImage(row.id)}
               alt={row.symbol}
+              unoptimized
             />
           </div>
           {/* Chain Icon Overlay */}
